@@ -13,6 +13,7 @@ class Reception {
 		Reception(int multiplier, int numberOfCooks, int replaceTime);
 		~Reception() = default;
 
+        void launchShell() const;
         int getMultiplier() const noexcept;
         int getNumberOfCooks() const noexcept;
         int getReplaceTime() const noexcept;
