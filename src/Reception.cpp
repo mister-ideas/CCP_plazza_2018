@@ -28,7 +28,6 @@ void Reception::launchShell() const
             std::cout << "plazza > ";
             if (!std::getline(std::cin, input) || input.empty())
                 throw Error("You entered an invalid input");
-
             size_t pos = 0;
             std::string order;
             std::string separator = "; ";
