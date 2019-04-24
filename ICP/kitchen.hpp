@@ -13,6 +13,10 @@ private:
     int _num_kitchen;
     std::thread tab_thread;
     int _nb_cooks;
+    int msqid;
+    key_t key;
+    message_buf  rbuf;
+    size_t buf_length;
 public:
     kitchen (int num_kitchen,int nb_cooks);
     void run();
