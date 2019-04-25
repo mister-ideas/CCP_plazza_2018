@@ -8,17 +8,23 @@
 #ifndef RECEPTION_HPP_
 #define RECEPTION_HPP_
 
+#include <vector>
+#include "../include/Pizza.hpp"
+
 class Reception {
 	public:
 		Reception(int multiplier, int numberOfCooks, int replaceTime);
 		~Reception() = default;
 
-        void launchShell() const;
+        void launchShell();
+        void extractOrders(std::string &input);
+        void addOrder(std::string type, std::string size, int number);
         int getMultiplier() const noexcept;
         int getNumberOfCooks() const noexcept;
         int getReplaceTime() const noexcept;
 
 	private:
+        std::vector<Pizza> _orders;
         int _multiplier;
         int _numberOfCooks;
         int _replaceTime;

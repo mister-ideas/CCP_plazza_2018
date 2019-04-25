@@ -9,6 +9,7 @@ SRC_DIR=	src/
 
 SRC=		$(SRC_DIR)main.cpp		\
 			$(SRC_DIR)Reception.cpp	\
+			$(SRC_DIR)Pizza.cpp
 
 OBJ=		$(SRC:.cpp=.o)
 
