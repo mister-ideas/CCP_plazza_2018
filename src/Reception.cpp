@@ -9,6 +9,7 @@
 #include <regex>
 #include "../include/Reception.hpp"
 #include "../include/Error.hpp"
+#include "../include/SharedMemory.hpp"
 
 Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 : _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
@@ -17,6 +18,7 @@ Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 
 void Reception::launchShell()
 {
+    SharedMemory shm(_numberOfCooks);
     std::string input;
     while (true) {
         try {

@@ -7,9 +7,10 @@
 
 SRC_DIR=	src/
 
-SRC=		$(SRC_DIR)main.cpp		\
-			$(SRC_DIR)Reception.cpp	\
-			$(SRC_DIR)Pizza.cpp
+SRC=		$(SRC_DIR)main.cpp			\
+			$(SRC_DIR)Reception.cpp		\
+			$(SRC_DIR)Pizza.cpp			\
+			$(SRC_DIR)SharedMemory.cpp
 
 OBJ=		$(SRC:.cpp=.o)
 
