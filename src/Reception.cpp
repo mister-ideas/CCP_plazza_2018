@@ -26,7 +26,7 @@ Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 
 void Reception::launchShell()
 {
-    _shm = new SharedMemory(_numberOfCooks);
+    _shm = new SharedMemory();
     _sharedMemory = openSharedMemory();
     std::string input;
     while (true) {
@@ -107,12 +107,9 @@ void Reception::sendOrders() noexcept
     while (it != _orders.end()) {
         for (int i = _numberOfCooks; i > 0; i--){
             kitchen = findFreeKitchen(i);
-            if(kitchen != -1) {
-                printf("find it \n");
+            if (kitchen != -1)
                 break;
-            }
         }
-        std::this_thread::sleep_for (std::chrono::milliseconds(1000));
         std::cout << "Kitchen : " << kitchen << std::endl; //
         if (kitchen != -1) {
             sendOrder(kitchen, *it);
@@ -142,8 +139,7 @@ int Reception::findFreeKitchen(int numberOfCooks) const noexcept
 {
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     for (int i = 0; i < MAX_KITCHENS; i++) {
-        printf("status %d  et nb cook %d  et i %d\n",_sharedMemory->status[i][0],_sharedMemory->status[i][1],numberOfCooks);
-        if (_sharedMemory->status[i][0] == 0 && _sharedMemory->status[i][1] == numberOfCooks) {
+        if (_sharedMemory->status[i][0] == numberOfCooks) {
             lock.unlock();
             return i;
         }
@@ -156,18 +152,7 @@ int Reception::findNewKitchen() const noexcept
 {
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     for (int i = 0; i < MAX_KITCHENS; i++) {
-        if (_sharedMemory->status[i][0] == 1) {
-            _sharedMemory->status[i][0] = 0;
-            _sharedMemory->status[i][1] = _numberOfCooks;
-            _sharedMemory->status[i][2] = 5;
-            _sharedMemory->status[i][3] = 5;
-            _sharedMemory->status[i][4] = 5;
-            _sharedMemory->status[i][5] = 5;
-            _sharedMemory->status[i][6] = 5;
-            _sharedMemory->status[i][7] = 5;
-            _sharedMemory->status[i][8] = 5;
-            _sharedMemory->status[i][9] = 5;
-            _sharedMemory->status[i][10] = 5;
+        if (_sharedMemory->status[i][0] == -1) {
             lock.unlock();
             return i;
         }

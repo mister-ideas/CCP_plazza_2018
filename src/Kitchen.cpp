@@ -19,9 +19,9 @@ Kitchen::Kitchen(int number, int numberOfCooks)
 {
     _sharedMemory = openSharedMemory();
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
-    _sharedMemory->status[_number][1] = _numberOfCooks;
+    _sharedMemory->status[_number][0] = _numberOfCooks;
     lock.unlock();
-    key_t key = MSG_KEY;
+    key_t key = ftok("~/Documents/Epitech/mr_clean", 'B');
     if ((_msqid = msgget(key, 0666)) < 0)
         throw Error("msgget failed");
 }
