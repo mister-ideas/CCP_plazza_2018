@@ -10,11 +10,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/ipc.h>
+#include <chrono>
+#include <thread>
 #include <sys/msg.h>
 #include "Reception.hpp"
 #include "Error.hpp"
 #include "SharedMemory.hpp"
 #include "Kitchen.hpp"
+
 
 Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 : _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
@@ -28,6 +31,7 @@ void Reception::launchShell()
     std::string input;
     while (true) {
         try {
+            std::this_thread::sleep_for (std::chrono::milliseconds(1000));
             std::cout << "plazza > ";
             if (!std::getline(std::cin, input) || input.empty())
                 throw Error("You entered an invalid input");
@@ -101,8 +105,14 @@ void Reception::sendOrders() noexcept
 
     auto it = _orders.begin();
     while (it != _orders.end()) {
-        for (int i = 0; i < _numberOfCooks; i++)
+        for (int i = _numberOfCooks; i > 0; i--){
             kitchen = findFreeKitchen(i);
+            if(kitchen != -1) {
+                printf("find it \n");
+                break;
+            }
+        }
+        std::this_thread::sleep_for (std::chrono::milliseconds(1000));
         std::cout << "Kitchen : " << kitchen << std::endl; //
         if (kitchen != -1) {
             sendOrder(kitchen, *it);
@@ -132,6 +142,7 @@ int Reception::findFreeKitchen(int numberOfCooks) const noexcept
 {
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     for (int i = 0; i < MAX_KITCHENS; i++) {
+        printf("status %d  et nb cook %d  et i %d\n",_sharedMemory->status[i][0],_sharedMemory->status[i][1],numberOfCooks);
         if (_sharedMemory->status[i][0] == 0 && _sharedMemory->status[i][1] == numberOfCooks) {
             lock.unlock();
             return i;
