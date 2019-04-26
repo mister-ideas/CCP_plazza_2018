@@ -113,9 +113,9 @@ void Reception::sendOrders() noexcept
 
 void Reception::sendOrder(int kitchen, Pizza &pizza)
 {
-    _sendBuffer.pizza.setType(pizza.getType());
-    _sendBuffer.pizza.setSize(pizza.getSize());
-    _sendBuffer.mtype = kitchen + 1;
+    _sendBuffer->pizza.setType(pizza.getType());
+    _sendBuffer->pizza.setSize(pizza.getSize());
+    _sendBuffer->mtype = kitchen + 1;
     if (msgsnd(_shm->getMsqid(), &_sendBuffer, sizeof(Pizza), IPC_NOWAIT) < 0)
         throw Error("msgsnd failed");
 }

@@ -9,6 +9,7 @@
 #define SHAREDMEMORY_HPP_
 
 #include <mutex>
+#include "../include/Pizza.hpp"
 
 constexpr int MAX_KITCHENS = 1000;
 constexpr int KEY = 12345;

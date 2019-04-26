@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "../include/Pizza.hpp"
+#include "../include/SharedMemory.hpp"
 
 class Reception {
 	public:
@@ -28,7 +29,7 @@ class Reception {
         std::vector<Pizza> _orders;
         SharedMemory *_shm;
         Plazza *_sharedMemory;
-        OrderMsg _sendBuffer;
+        OrderMsg *_sendBuffer;
         int _multiplier;
         int _numberOfCooks;
         int _replaceTime;
