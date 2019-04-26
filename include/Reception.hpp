@@ -19,12 +19,16 @@ class Reception {
         void launchShell();
         void extractOrders(std::string &input);
         void addOrder(std::string type, std::string size, int number);
-        int getMultiplier() const noexcept;
-        int getNumberOfCooks() const noexcept;
-        int getReplaceTime() const noexcept;
+        void sendOrders() noexcept;
+        void sendOrder(int kitchen, Pizza &pizza);
+        int findFreeKitchen(int numberOfCooks) const noexcept;
+        int findNewKitchen() const noexcept;
 
 	private:
         std::vector<Pizza> _orders;
+        SharedMemory *_shm;
+        Plazza *_sharedMemory;
+        OrderMsg _sendBuffer;
         int _multiplier;
         int _numberOfCooks;
         int _replaceTime;

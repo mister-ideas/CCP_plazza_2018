@@ -34,6 +34,11 @@ SharedMemory::SharedMemory(int numberOfCooks)
         throw Error("msgget failed");
 }
 
+int SharedMemory::getMsqid() const noexcept
+{
+    return _msqid;
+}
+
 void SharedMemory::createSharedMemory()
 {
     int mem_ID;

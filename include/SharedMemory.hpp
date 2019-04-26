@@ -19,10 +19,17 @@ struct Plazza {
     std::mutex mutex;
 };
 
+struct OrderMsg {
+    long mtype;
+    Pizza &pizza;
+};
+
 class SharedMemory {
 	public:
 		SharedMemory(int numberOfCooks);
 		~SharedMemory() = default;
+
+        int getMsqid() const noexcept;
 
         void createSharedMemory();
         Plazza *openSharedMemory() const;

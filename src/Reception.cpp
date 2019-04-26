@@ -7,6 +7,10 @@
 
 #include <iostream>
 #include <regex>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include "../include/Reception.hpp"
 #include "../include/Error.hpp"
 #include "../include/SharedMemory.hpp"
@@ -18,7 +22,8 @@ Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 
 void Reception::launchShell()
 {
-    SharedMemory shm(_numberOfCooks);
+    _shm = new SharedMemory(_numberOfCooks);
+    _sharedMemory = _shm->openSharedMemory();
     std::string input;
     while (true) {
         try {
@@ -26,6 +31,7 @@ void Reception::launchShell()
             if (!std::getline(std::cin, input) || input.empty())
                 throw Error("You entered an invalid input");
             extractOrders(input);
+            sendOrders();
         } catch (std::exception &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -85,17 +91,57 @@ void Reception::addOrder(std::string type, std::string size, int number)
     }
 }
 
-int Reception::getMultiplier() const noexcept
+void Reception::sendOrders() noexcept
 {
-    return _multiplier;
+    int kitchen;
+
+    for (std::vector<Pizza>::iterator it = _orders.begin(); it != _orders.end(); it++) {
+        for (int i = 0; i < _numberOfCooks; i++)
+            kitchen = findFreeKitchen(i);
+        if (kitchen != -1)
+            sendOrder(kitchen, *it);
+        else {
+            int pid = fork();
+            if (pid == 0) {
+                kitchen = findNewKitchen();
+                //new kitchen
+                //run kitchen
+            }
+        }
+    }
 }
 
-int Reception::getNumberOfCooks() const noexcept
+void Reception::sendOrder(int kitchen, Pizza &pizza)
 {
-    return _numberOfCooks;
+    _sendBuffer.pizza.setType(pizza.getType());
+    _sendBuffer.pizza.setSize(pizza.getSize());
+    _sendBuffer.mtype = kitchen + 1;
+    if (msgsnd(_shm->getMsqid(), &_sendBuffer, sizeof(Pizza), IPC_NOWAIT) < 0)
+        throw Error("msgsnd failed");
 }
 
-int Reception::getReplaceTime() const noexcept
+int Reception::findFreeKitchen(int numberOfCooks) const noexcept
 {
-    return _replaceTime;
+    std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
+    for (int i = 0; i < MAX_KITCHENS; i++) {
+        if (_sharedMemory->status[i][1] == numberOfCooks) {
+            lock.unlock();
+            return i;
+        }
+    }
+    lock.unlock();
+    return -1;
+}
+
+int Reception::findNewKitchen() const noexcept
+{
+    std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
+    for (int i = 0; i < MAX_KITCHENS; i++) {
+        if (_sharedMemory->status[i][0] == -1) {
+            lock.unlock();
+            return i;
+        }
+    }
+    lock.unlock();
+    return -1;
 }

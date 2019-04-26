@@ -17,7 +17,17 @@ PizzaType Pizza::getType() const noexcept
     return _type;
 }
 
+void Pizza::setType(PizzaType type) noexcept
+{
+    _type = type;
+}
+
 PizzaSize Pizza::getSize() const noexcept
 {
     return _size;
+}
+
+void Pizza::setSize(PizzaSize size) noexcept
+{
+    _size = size;
 }

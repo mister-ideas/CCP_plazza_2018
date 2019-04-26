@@ -29,7 +29,9 @@ class Pizza {
 		~Pizza() = default;
 
         PizzaType getType() const noexcept;
+        void setType(PizzaType type) noexcept;
         PizzaSize getSize() const noexcept;
+        void setSize(PizzaSize size) noexcept;
 
 	private:
         PizzaType _type;
