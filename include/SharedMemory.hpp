@@ -11,7 +11,7 @@
 #include <mutex>
 #include "../include/Pizza.hpp"
 
-constexpr int MAX_KITCHENS = 1000;
+constexpr int MAX_KITCHENS = 100;
 constexpr int KEY = 12345;
 constexpr int MSG_KEY = 1234;
 
@@ -22,7 +22,7 @@ struct Plazza {
 
 struct OrderMsg {
     long mtype;
-    Pizza &pizza;
+    Pizza *pizza;
 };
 
 class SharedMemory {
@@ -33,11 +33,12 @@ class SharedMemory {
         int getMsqid() const noexcept;
 
         void createSharedMemory();
-        Plazza *openSharedMemory() const;
 
 	private:
         Plazza *_sharedMemory;
         int _msqid;
 };
+
+Plazza *openSharedMemory();
 
 #endif /* !SHAREDMEMORY_HPP_ */

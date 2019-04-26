@@ -9,8 +9,8 @@
 #define RECEPTION_HPP_
 
 #include <vector>
-#include "../include/Pizza.hpp"
-#include "../include/SharedMemory.hpp"
+#include "Pizza.hpp"
+#include "SharedMemory.hpp"
 
 class Reception {
 	public:
@@ -21,12 +21,12 @@ class Reception {
         void extractOrders(std::string &input);
         void addOrder(std::string type, std::string size, int number);
         void sendOrders() noexcept;
-        void sendOrder(int kitchen, Pizza &pizza);
+        void sendOrder(int kitchen, Pizza *pizza);
         int findFreeKitchen(int numberOfCooks) const noexcept;
         int findNewKitchen() const noexcept;
 
 	private:
-        std::vector<Pizza> _orders;
+        std::vector<Pizza *> _orders;
         SharedMemory *_shm;
         Plazza *_sharedMemory;
         OrderMsg *_sendBuffer;

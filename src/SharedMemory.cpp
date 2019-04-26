@@ -17,7 +17,7 @@ SharedMemory::SharedMemory(int numberOfCooks)
 {
     createSharedMemory();
     for (int i = 0; i < MAX_KITCHENS; i++) {
-        _sharedMemory->status[i][0] = -1;
+        _sharedMemory->status[i][0] = 1;
         _sharedMemory->status[i][1] = numberOfCooks;
         _sharedMemory->status[i][2] = 5;
         _sharedMemory->status[i][3] = 5;
@@ -49,7 +49,7 @@ void SharedMemory::createSharedMemory()
         throw Error("shmat failed");
 }
 
-Plazza *SharedMemory::openSharedMemory() const
+Plazza *openSharedMemory()
 {
     void *sharedMemory;
     int mem_ID;
