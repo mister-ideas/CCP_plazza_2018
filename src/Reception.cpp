@@ -22,6 +22,8 @@
 Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 : _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
 {
+    _sendBuffer = new OrderMsg;
+    _sendBuffer->pizza = new Pizza(Margarita, S);
 }
 
 void Reception::launchShell()
@@ -105,6 +107,7 @@ void Reception::sendOrders() noexcept
 
     auto it = _orders.begin();
     while (it != _orders.end()) {
+        std::this_thread::sleep_for (std::chrono::milliseconds(100));
         for (int i = _numberOfCooks; i > 0; i--){
             kitchen = findFreeKitchen(i);
             if (kitchen != -1)

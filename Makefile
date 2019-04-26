@@ -18,7 +18,7 @@ OBJ=		$(SRC:.cpp=.o)
 
 NAME=		plazza
 
-CXXFLAGS=	-Wall -Wextra -Werror -std=c++17
+CXXFLAGS=	-Wall -Wextra -Werror -std=c++17 -g3
 
 CPPFLAGS=	-I include/ -lpthread
 

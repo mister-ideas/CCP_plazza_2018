@@ -12,7 +12,7 @@
 
 class Cook {
 	public:
-		Cook();
+		Cook() = default;
 		~Cook() = default;
 
         bool getActiveOrder() const noexcept;

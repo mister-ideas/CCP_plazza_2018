@@ -7,11 +7,6 @@
 
 #include "Cook.hpp"
 
-Cook::Cook()
-: _activeOrder(false)
-{
-}
-
 bool Cook::getActiveOrder() const noexcept
 {
     return _activeOrder;

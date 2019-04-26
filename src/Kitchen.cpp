@@ -30,7 +30,8 @@ void Kitchen::run()
 {
     pthread_t *cooks = new pthread_t[_numberOfCooks];
     for (int i = 0; i < _numberOfCooks; i++) {
-        Cook *cook;
+        Cook *cook = new Cook;
+        cook->setActiveOrder(false);
         _cooks.push_back(cook);
         ThreadParams *params = new ThreadParams;
         params->cook = _cooks[i];
@@ -43,7 +44,7 @@ void Kitchen::run()
         if (msgrcv(_msqid, &_receiveBuffer, sizeof(Plazza), _number + 1, MSG_NOERROR) < 0)
             throw Error("msgrcv failed");
         std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
-        _sharedMemory->status[_number][1] -= 1;
+        _sharedMemory->status[_number][0] -= 1;
         lock.unlock();
         for (int i = 0; i < _numberOfCooks; i++) {
             if (!_cooks[i]->getActiveOrder()) {
@@ -63,8 +64,9 @@ void *launchThread(void *params)
             //do order
             readParams->cook->setActiveOrder(false);
             //log
+            std::cout << "order done" << std::endl;
             std::unique_lock<std::mutex> lock(readParams->sharedMemory->mutex);
-            readParams->sharedMemory->status[readParams->kitchenNumber][1] += 1;
+            readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
             lock.unlock();
         } else
             std::this_thread::yield();
