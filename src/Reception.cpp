@@ -103,7 +103,7 @@ void Reception::sendOrders() noexcept
 
     auto it = _orders.begin();
     while (it != _orders.end()) {
-        std::this_thread::sleep_for (std::chrono::milliseconds(100));
+        std::this_thread::sleep_for (std::chrono::milliseconds(10));
         for (int i = _numberOfCooks; i > 0; i--){
             kitchen = findFreeKitchen(i);
             if (kitchen != -1)

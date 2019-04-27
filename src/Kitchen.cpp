@@ -43,19 +43,20 @@ void Kitchen::run()
         pthread_create(&cooks[i], NULL, launchThread, (void*)params);
     }
     while (true) {
-        if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR) < 0)
-            throw Error("msgrcv failed");
-        std::cout << "Received : " << _receiveBuffer.pizza.type << " " << _receiveBuffer.pizza.size << std::endl;
-        std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
-        _sharedMemory->status[_number][0] -= 1;
-        lock.unlock();
-        for (int i = 0; i < _numberOfCooks; i++) {
-            if (!_cooks[i]->getActiveOrder()) {
-                Pizza *pizza = new Pizza(_receiveBuffer.pizza.type, _receiveBuffer.pizza.size);
-                _cooks[i]->setPizza(pizza);
-                _cooks[i]->setActiveOrder(true);
-                std::cout << "Choosed cook : " << i << std::endl; //
-                break;
+        //need clock here
+        if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR | IPC_NOWAIT) > 0) {
+            std::cout << "Received : " << _receiveBuffer.pizza.type << " " << _receiveBuffer.pizza.size << std::endl;
+            std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
+            _sharedMemory->status[_number][0] -= 1;
+            lock.unlock();
+            for (int i = 0; i < _numberOfCooks; i++) {
+                if (!_cooks[i]->getActiveOrder()) {
+                    Pizza *pizza = new Pizza(_receiveBuffer.pizza.type, _receiveBuffer.pizza.size);
+                    _cooks[i]->setPizza(pizza);
+                    _cooks[i]->setActiveOrder(true);
+                    std::cout << "Choosed cook : " << i << std::endl; //
+                    break;
+                }
             }
         }
     }
