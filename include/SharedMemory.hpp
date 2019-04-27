@@ -31,7 +31,7 @@ struct OrderMsg {
 class SharedMemory {
 	public:
 		SharedMemory();
-		~SharedMemory() = default;
+		~SharedMemory();
 
         int getMsqid() const noexcept;
 
@@ -39,6 +39,7 @@ class SharedMemory {
 
 	private:
         Plazza *_sharedMemory;
+        int _shmid;
         int _msqid;
 };
 

@@ -33,6 +33,12 @@ SharedMemory::SharedMemory()
         throw Error("msgget failed");
 }
 
+SharedMemory::~SharedMemory()
+{
+    msgctl(_msqid, IPC_RMID, NULL);
+    shmctl(_shmid, IPC_RMID, NULL);
+}
+
 int SharedMemory::getMsqid() const noexcept
 {
     return _msqid;
@@ -40,12 +46,11 @@ int SharedMemory::getMsqid() const noexcept
 
 void SharedMemory::createSharedMemory()
 {
-    int shmid;
     key_t key = ftok("/etc/bashrc", 'A');
 
-	if ((shmid = shmget(key, sizeof(Plazza), 0666 | IPC_CREAT)) < 0)
+	if ((_shmid = shmget(key, sizeof(Plazza), 0666 | IPC_CREAT)) < 0)
         throw Error("shmget failed");
-    if ((_sharedMemory = (Plazza *)shmat(shmid, NULL, 0)) == (void *) -1)
+    if ((_sharedMemory = (Plazza *)shmat(_shmid, NULL, 0)) == (void *) -1)
         throw Error("shmat failed");
 }
 

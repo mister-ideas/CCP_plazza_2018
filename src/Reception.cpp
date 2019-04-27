@@ -23,20 +23,22 @@ Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 {
 }
 
+Reception::~Reception()
+{
+    delete _shm;
+}
+
 void Reception::launchShell()
 {
     _shm = new SharedMemory();
     _sharedMemory = openSharedMemory();
     std::string input;
     while (true) {
-        try {
-            if (!std::getline(std::cin, input) || input.empty())
-                throw Error("You entered an invalid input");
-            extractOrders(input);
-            sendOrders();
-        } catch (std::exception &e) {
-            std::cerr << e.what() << std::endl;
-        }
+        if (!std::getline(std::cin, input))
+            throw Error("You entered an invalid input");
+        extractOrders(input);
+        sendOrders();
+        input.erase();
     }
 }
 
@@ -48,18 +50,22 @@ void Reception::extractOrders(std::string &input)
     std::string order;
     std::string separator = "; ";
 
-    while ((pos = input.find(separator)) != std::string::npos) {
-        order = input.substr(0, pos);
-        if (std::regex_search(order, match, regex))
+    try {
+        while ((pos = input.find(separator)) != std::string::npos) {
+            order = input.substr(0, pos);
+            if (std::regex_search(order, match, regex))
+                addOrder(match[1], match[2], stoi(match[3]));
+            else
+                throw Error("Bad order syntax!");
+            input.erase(0, pos + separator.length());
+        }
+        if (std::regex_search(input, match, regex))
             addOrder(match[1], match[2], stoi(match[3]));
         else
             throw Error("Bad order syntax!");
-        input.erase(0, pos + separator.length());
+    } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
     }
-    if (std::regex_search(input, match, regex))
-        addOrder(match[1], match[2], stoi(match[3]));
-    else
-        throw Error("Bad order syntax!");
 }
 
 void Reception::addOrder(std::string type, std::string size, int number)
@@ -95,8 +101,7 @@ void Reception::sendOrders() noexcept
 {
     int kitchen;
 
-    auto it = _orders.begin();
-    while (it != _orders.end()) {
+    while (_orders.size()) {
         std::this_thread::sleep_for (std::chrono::milliseconds(10));
         for (int i = _numberOfCooks; i > 0; i--){
             kitchen = findFreeKitchen(i);
@@ -104,14 +109,12 @@ void Reception::sendOrders() noexcept
                 break;
         }
         if (kitchen != -1) {
-            std::cout << "Choosed kitchen : " << kitchen << std::endl;
-            sendOrder(kitchen, *it);
-            it = _orders.erase(it);
+            sendOrder(kitchen, _orders.back());
+            _orders.pop_back();
         } else {
             int pid = fork();
             if (pid == 0) {
                 kitchen = findNewKitchen();
-                std::cout << "New kitchen : " << kitchen << std::endl;
                 Kitchen k(kitchen, _multiplier, _numberOfCooks, _replaceTime);
                 k.launchKitchen();
             }

@@ -15,7 +15,7 @@
 class Reception {
 	public:
 		Reception(int multiplier, int numberOfCooks, int replaceTime);
-		~Reception() = default;
+		~Reception();
 
         void launchShell();
         void extractOrders(std::string &input);
