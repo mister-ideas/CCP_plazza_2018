@@ -17,11 +17,13 @@ struct ThreadParams {
     Plazza *sharedMemory;
     int number;
     int kitchenNumber;
+    int multiplier;
+    int replaceTime;
 };
 
 class Kitchen {
 	public:
-		Kitchen(int number, int numberOfCooks);
+		Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime);
 		~Kitchen() = default;
 
         void run();
@@ -32,9 +34,12 @@ class Kitchen {
         OrderMsg *_receiveBuffer;
         int _msqid;
         int _number;
+        int _multiplier;
         int _numberOfCooks;
+        int _replaceTime;
 };
 
 void *launchThread(void *number);
+void executeOrder(ThreadParams *readParams) noexcept;
 
 #endif /* !KITCHEN_HPP_ */

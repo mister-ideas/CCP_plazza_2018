@@ -33,7 +33,6 @@ void Reception::launchShell()
     std::string input;
     while (true) {
         try {
-            std::this_thread::sleep_for (std::chrono::milliseconds(1000));
             std::cout << "plazza > ";
             if (!std::getline(std::cin, input) || input.empty())
                 throw Error("You entered an invalid input");
@@ -122,7 +121,7 @@ void Reception::sendOrders() noexcept
             if (pid == 0) {
                 kitchen = findNewKitchen();
                 std::cout << "New kitchen : " << kitchen << std::endl; //
-                Kitchen k(kitchen, _numberOfCooks);
+                Kitchen k(kitchen, _multiplier, _numberOfCooks, _replaceTime);
                 k.run();
             }
         }
@@ -134,7 +133,7 @@ void Reception::sendOrder(int kitchen, Pizza *pizza)
     _sendBuffer->pizza->setType(pizza->getType());
     _sendBuffer->pizza->setSize(pizza->getSize());
     _sendBuffer->mtype = kitchen + 1;
-    if (msgsnd(_shm->getMsqid(), &_sendBuffer, sizeof(Pizza), IPC_NOWAIT) < 0)
+    if (msgsnd(_shm->getMsqid(), (void *)&_sendBuffer, sizeof(Pizza), IPC_NOWAIT) < 0)
         throw Error("msgsnd failed");
 }
 

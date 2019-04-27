@@ -14,8 +14,8 @@
 #include "Kitchen.hpp"
 #include "Error.hpp"
 
-Kitchen::Kitchen(int number, int numberOfCooks)
-: _number(number), _numberOfCooks(numberOfCooks)
+Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
+: _number(number), _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
 {
     _sharedMemory = openSharedMemory();
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
@@ -38,11 +38,14 @@ void Kitchen::run()
         params->sharedMemory = _sharedMemory;
         params->number = i;
         params->kitchenNumber = _number;
+        params->multiplier = _multiplier;
+        params->replaceTime = _replaceTime;
         pthread_create(&cooks[i], NULL, launchThread, (void*)params);
     }
     while (true) {
-        if (msgrcv(_msqid, &_receiveBuffer, sizeof(Plazza), _number + 1, MSG_NOERROR) < 0)
+        if (msgrcv(_msqid, (void *)&_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR) < 0)
             throw Error("msgrcv failed");
+        std::cout << "test" << std::endl;
         std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
         _sharedMemory->status[_number][0] -= 1;
         lock.unlock();
@@ -61,14 +64,78 @@ void *launchThread(void *params)
     ThreadParams *readParams = (ThreadParams*)params;
     while (true) {
         if (readParams->cook->getActiveOrder()) {
-            //do order
-            readParams->cook->setActiveOrder(false);
-            //log
-            std::cout << "order done" << std::endl;
             std::unique_lock<std::mutex> lock(readParams->sharedMemory->mutex);
-            readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+            executeOrder(readParams);
             lock.unlock();
         } else
             std::this_thread::yield();
+    }
+}
+
+void executeOrder(ThreadParams *readParams) noexcept
+{
+    switch (readParams->cook->getPizza()->getType()) {
+        case Margarita:
+            if (readParams->sharedMemory->status[readParams->kitchenNumber][1] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][2] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][3] > 0) {
+                std::this_thread::sleep_for(std::chrono::seconds(1 * readParams->multiplier));
+                readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][3] -= 1;
+                readParams->cook->setActiveOrder(false);
+                readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                std::cout << "margarita" << std::endl; //
+            }
+            break;
+        case Regina:
+            if (readParams->sharedMemory->status[readParams->kitchenNumber][1] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][2] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][3] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][4] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][5] > 0) {
+                std::this_thread::sleep_for(std::chrono::seconds(2 * readParams->multiplier));
+                readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][3] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][4] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][5] -= 1;
+                readParams->cook->setActiveOrder(false);
+                readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                std::cout << "regina" << std::endl; //
+            }
+            break;
+        case Americana:
+            if (readParams->sharedMemory->status[readParams->kitchenNumber][1] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][2] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][3] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][6] > 0) {
+                std::this_thread::sleep_for(std::chrono::seconds(2 * readParams->multiplier));
+                readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][3] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][6] -= 1;
+                readParams->cook->setActiveOrder(false);
+                readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                std::cout << "americana" << std::endl; //
+            }
+            break;
+        case Fantasia:
+            if (readParams->sharedMemory->status[readParams->kitchenNumber][1] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][2] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][7] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][8] > 0
+            && readParams->sharedMemory->status[readParams->kitchenNumber][9] > 0) {
+                std::this_thread::sleep_for(std::chrono::seconds(4 * readParams->multiplier));
+                readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][7] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][8] -= 1;
+                readParams->sharedMemory->status[readParams->kitchenNumber][9] -= 1;
+                readParams->cook->setActiveOrder(false);
+                readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                std::cout << "fantasia" << std::endl; //
+            }
+            break;
     }
 }
