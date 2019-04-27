@@ -12,12 +12,11 @@
 
 
 
-int main()
+int main(int ac, char **av)
 {
     int num_kitchen;
-    int nb_cooks = 5;
-    int nombredecommande = 2;
-    reception R(2,nb_cooks,2000);
+    int nb_cooks = atoi(av[2]);
+    reception R(atof(av[1]),nb_cooks,atoi(av[3]));
 //Normalement bloquer ici si pas de commande
     while(1){
         //if(nombredecommande >= 0) {

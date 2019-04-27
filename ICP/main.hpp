@@ -21,6 +21,7 @@
 #include <map>
 #include <sys/msg.h>
 #include <stdlib.h>
+#include <vector>
 
 #ifndef MAIN_HPP
 #define MAIN_HPP

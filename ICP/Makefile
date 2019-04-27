@@ -5,7 +5,7 @@
 ## maths
 ##
 
-CC 	= 	g++ -lpthread 
+CC 	= 	g++ -lpthread
 
 RM	= 	rm -f
 
@@ -15,6 +15,7 @@ SRCS	=	main.cpp \
 		open_shared_mem.cpp \
 		reception.cpp \
 		kitchen.cpp \
+		parsing.cpp \
 
 OBJS	=	$(SRCS:.cpp=.o)
 
