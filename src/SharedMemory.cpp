@@ -28,7 +28,7 @@ SharedMemory::SharedMemory()
         _sharedMemory->status[i][8] = 5;
         _sharedMemory->status[i][9] = 5;
     }
-    key_t key = ftok("~/Documents/Epitech/mr_clean", 'B');
+    key_t key = ftok("/etc/bashrc", 'B');
     if ((_msqid = msgget(key, IPC_CREAT | 0666)) < 0)
         throw Error("msgget failed");
 }
@@ -41,7 +41,7 @@ int SharedMemory::getMsqid() const noexcept
 void SharedMemory::createSharedMemory()
 {
     int shmid;
-    key_t key = ftok("~/Documents/Epitech/mr_clean", 'A');
+    key_t key = ftok("/etc/bashrc", 'A');
 
 	if ((shmid = shmget(key, sizeof(Plazza), 0666 | IPC_CREAT)) < 0)
         throw Error("shmget failed");
@@ -53,7 +53,7 @@ Plazza *openSharedMemory()
 {
     void *sharedMemory;
     int shmid;
-    key_t key = ftok("~/Documents/Epitech/mr_clean", 'A');
+    key_t key = ftok("/etc/bashrc", 'A');
 
 	if ((shmid = shmget(key, sizeof(Plazza), 0666)) < 0)
         throw Error("shmget failed");

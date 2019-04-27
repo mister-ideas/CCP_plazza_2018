@@ -26,7 +26,9 @@ class Kitchen {
 		Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime);
 		~Kitchen() = default;
 
-        void run();
+        void createCooks() noexcept;
+        void launchKitchen() noexcept;
+        void assignOrder() noexcept;
 
 	private:
         std::vector<Cook *> _cooks;
@@ -41,5 +43,6 @@ class Kitchen {
 
 void *launchThread(void *number);
 void executeOrder(ThreadParams *readParams) noexcept;
+void displayAndLog(ThreadParams *readParams, const std::string &type) noexcept;
 
 #endif /* !KITCHEN_HPP_ */
