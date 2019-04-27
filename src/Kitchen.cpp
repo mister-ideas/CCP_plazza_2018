@@ -49,14 +49,7 @@ void Kitchen::createCooks() noexcept
 void Kitchen::launchKitchen() noexcept
 {
     createCooks();
-    std::clock_t clk = std::clock();
-    double duration = 0;
     while (true) {
-        duration = (std::clock() - clk) / (double)(CLOCKS_PER_SEC/1000);
-        if (duration == 5000) {
-            std::cout << duration << std::endl;
-            clk = std::clock();
-        }
         if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR | IPC_NOWAIT) > 0)
             assignOrder();
     }
