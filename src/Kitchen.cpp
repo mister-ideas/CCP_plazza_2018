@@ -65,11 +65,9 @@ void *launchThread(void *params)
 {
     ThreadParams *readParams = (ThreadParams*)params;
     while (true) {
-        if (readParams->cook->getActiveOrder()) {
-            std::unique_lock<std::mutex> lock(readParams->sharedMemory->mutex);
+        if (readParams->cook->getActiveOrder())
             executeOrder(readParams);
-            lock.unlock();
-        } else
+        else
             std::this_thread::yield();
     }
 }
@@ -82,11 +80,13 @@ void executeOrder(ThreadParams *readParams) noexcept
             && readParams->sharedMemory->status[readParams->kitchenNumber][2] > 0
             && readParams->sharedMemory->status[readParams->kitchenNumber][3] > 0) {
                 std::this_thread::sleep_for(std::chrono::seconds(1 * readParams->multiplier));
+                std::unique_lock<std::mutex> lock(readParams->sharedMemory->mutex);
                 readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][3] -= 1;
-                readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                lock.unlock();
+                readParams->cook->setActiveOrder(false);
                 std::cout << "Done " << Margarita << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
@@ -97,13 +97,15 @@ void executeOrder(ThreadParams *readParams) noexcept
             && readParams->sharedMemory->status[readParams->kitchenNumber][4] > 0
             && readParams->sharedMemory->status[readParams->kitchenNumber][5] > 0) {
                 std::this_thread::sleep_for(std::chrono::seconds(2 * readParams->multiplier));
+                std::unique_lock<std::mutex> lock(readParams->sharedMemory->mutex);
                 readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][3] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][4] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][5] -= 1;
-                readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                lock.unlock();
+                readParams->cook->setActiveOrder(false);
                 std::cout << "Done " << Regina << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
@@ -113,12 +115,14 @@ void executeOrder(ThreadParams *readParams) noexcept
             && readParams->sharedMemory->status[readParams->kitchenNumber][3] > 0
             && readParams->sharedMemory->status[readParams->kitchenNumber][6] > 0) {
                 std::this_thread::sleep_for(std::chrono::seconds(2 * readParams->multiplier));
+                std::unique_lock<std::mutex> lock(readParams->sharedMemory->mutex);
                 readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][3] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][6] -= 1;
-                readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                lock.unlock();
+                readParams->cook->setActiveOrder(false);
                 std::cout << "Done " << Americana << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
@@ -129,13 +133,15 @@ void executeOrder(ThreadParams *readParams) noexcept
             && readParams->sharedMemory->status[readParams->kitchenNumber][8] > 0
             && readParams->sharedMemory->status[readParams->kitchenNumber][9] > 0) {
                 std::this_thread::sleep_for(std::chrono::seconds(4 * readParams->multiplier));
+                std::unique_lock<std::mutex> lock(readParams->sharedMemory->mutex);
                 readParams->sharedMemory->status[readParams->kitchenNumber][1] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][2] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][7] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][8] -= 1;
                 readParams->sharedMemory->status[readParams->kitchenNumber][9] -= 1;
-                readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
+                lock.unlock();
+                readParams->cook->setActiveOrder(false);
                 std::cout << "Done " << Fantasia << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
