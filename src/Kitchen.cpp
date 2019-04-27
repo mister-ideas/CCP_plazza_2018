@@ -49,8 +49,14 @@ void Kitchen::createCooks() noexcept
 void Kitchen::launchKitchen() noexcept
 {
     createCooks();
+    std::clock_t clk = std::clock();
+    double duration = 0;
     while (true) {
-        //need clock here
+        duration = (std::clock() - clk) / (double)(CLOCKS_PER_SEC/1000);
+        if (duration == 5000) {
+            std::cout << duration << std::endl;
+            clk = std::clock();
+        }
         if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR | IPC_NOWAIT) > 0)
             assignOrder();
     }
@@ -167,23 +173,23 @@ void displayAndLog(ThreadParams *readParams, const std::string &type) noexcept
     readParams->cook->setActiveOrder(false);
     switch (readParams->cook->getPizza()->getSize()) {
         case S:
-            std::cout << "Cooked 1 " << type << "with size S" << std::endl;
+            std::cout << "Cooked 1 " << type << " with size S" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size S" << std::endl << std::endl;
             break;
         case M:
-            std::cout << "Cooked 1 " << type << "with size M" << std::endl;
+            std::cout << "Cooked 1 " << type << " with size M" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size M" << std::endl << std::endl;
             break;
         case L:
-            std::cout << "Cooked 1 " << type << "with size L" << std::endl;
+            std::cout << "Cooked 1 " << type << " with size L" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size L" << std::endl << std::endl;
             break;
         case XL:
-            std::cout << "Cooked 1 " << type << "with size XL" << std::endl;
+            std::cout << "Cooked 1 " << type << " with size XL" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size XL" << std::endl << std::endl;
             break;
         case XXL:
-            std::cout << "Cooked 1 " << type << "with size XXL" << std::endl;
+            std::cout << "Cooked 1 " << type << " with size XXL" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size XXL" << std::endl << std::endl;
             break;
     }
