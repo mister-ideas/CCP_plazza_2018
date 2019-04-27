@@ -22,8 +22,6 @@
 Reception::Reception(int multiplier, int numberOfCooks, int replaceTime)
 : _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
 {
-    _sendBuffer = new OrderMsg;
-    _sendBuffer->pizza = new Pizza(Margarita, S);
 }
 
 void Reception::launchShell()
@@ -33,7 +31,6 @@ void Reception::launchShell()
     std::string input;
     while (true) {
         try {
-            std::cout << "plazza > ";
             if (!std::getline(std::cin, input) || input.empty())
                 throw Error("You entered an invalid input");
             extractOrders(input);
@@ -130,10 +127,11 @@ void Reception::sendOrders() noexcept
 
 void Reception::sendOrder(int kitchen, Pizza *pizza)
 {
-    _sendBuffer->pizza->setType(pizza->getType());
-    _sendBuffer->pizza->setSize(pizza->getSize());
-    _sendBuffer->mtype = kitchen + 1;
-    if (msgsnd(_shm->getMsqid(), (void *)&_sendBuffer, sizeof(Pizza), IPC_NOWAIT) < 0)
+    _sendBuffer.pizza.type = pizza->getType();
+    _sendBuffer.pizza.size = pizza->getSize();
+    std::cout << "Sent : " << _sendBuffer.pizza.type << " " << _sendBuffer.pizza.size << std::endl;
+    _sendBuffer.mtype = kitchen + 1;
+    if (msgsnd(_shm->getMsqid(), &_sendBuffer, sizeof(Pizza), IPC_NOWAIT) < 0)
         throw Error("msgsnd failed");
 }
 

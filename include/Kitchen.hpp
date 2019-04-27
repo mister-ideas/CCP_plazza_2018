@@ -31,7 +31,7 @@ class Kitchen {
 	private:
         std::vector<Cook *> _cooks;
         Plazza *_sharedMemory;
-        OrderMsg *_receiveBuffer;
+        OrderMsg _receiveBuffer;
         int _msqid;
         int _number;
         int _multiplier;

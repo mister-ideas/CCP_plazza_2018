@@ -18,9 +18,14 @@ struct Plazza {
     std::mutex mutex;
 };
 
+struct OrderPizza {
+    PizzaType type;
+    PizzaSize size;
+};
+
 struct OrderMsg {
     long mtype;
-    Pizza *pizza;
+    OrderPizza pizza;
 };
 
 class SharedMemory {

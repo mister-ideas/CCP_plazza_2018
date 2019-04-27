@@ -43,16 +43,18 @@ void Kitchen::run()
         pthread_create(&cooks[i], NULL, launchThread, (void*)params);
     }
     while (true) {
-        if (msgrcv(_msqid, (void *)&_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR) < 0)
+        if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR) < 0)
             throw Error("msgrcv failed");
-        std::cout << "test" << std::endl;
+        std::cout << "Received : " << _receiveBuffer.pizza.type << " " << _receiveBuffer.pizza.size << std::endl;
         std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
         _sharedMemory->status[_number][0] -= 1;
         lock.unlock();
         for (int i = 0; i < _numberOfCooks; i++) {
             if (!_cooks[i]->getActiveOrder()) {
-                _cooks[i]->setPizza(_receiveBuffer->pizza);
+                Pizza *pizza = new Pizza(_receiveBuffer.pizza.type, _receiveBuffer.pizza.size);
+                _cooks[i]->setPizza(pizza);
                 _cooks[i]->setActiveOrder(true);
+                std::cout << "Choosed cook : " << i << std::endl; //
                 break;
             }
         }
@@ -85,7 +87,7 @@ void executeOrder(ThreadParams *readParams) noexcept
                 readParams->sharedMemory->status[readParams->kitchenNumber][3] -= 1;
                 readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
-                std::cout << "margarita" << std::endl; //
+                std::cout << "Done " << Margarita << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
         case Regina:
@@ -102,7 +104,7 @@ void executeOrder(ThreadParams *readParams) noexcept
                 readParams->sharedMemory->status[readParams->kitchenNumber][5] -= 1;
                 readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
-                std::cout << "regina" << std::endl; //
+                std::cout << "Done " << Regina << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
         case Americana:
@@ -117,7 +119,7 @@ void executeOrder(ThreadParams *readParams) noexcept
                 readParams->sharedMemory->status[readParams->kitchenNumber][6] -= 1;
                 readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
-                std::cout << "americana" << std::endl; //
+                std::cout << "Done " << Americana << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
         case Fantasia:
@@ -134,7 +136,7 @@ void executeOrder(ThreadParams *readParams) noexcept
                 readParams->sharedMemory->status[readParams->kitchenNumber][9] -= 1;
                 readParams->cook->setActiveOrder(false);
                 readParams->sharedMemory->status[readParams->kitchenNumber][0] += 1;
-                std::cout << "fantasia" << std::endl; //
+                std::cout << "Done " << Fantasia << " " << readParams->cook->getPizza()->getSize() << std::endl; //
             }
             break;
     }
