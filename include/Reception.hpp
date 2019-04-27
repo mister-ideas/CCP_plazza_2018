@@ -18,6 +18,7 @@ class Reception {
 		~Reception();
 
         void launchShell();
+        void displayStatus() const noexcept;
         void extractOrders(std::string &input);
         void addOrder(std::string type, std::string size, int number);
         void sendOrders() noexcept;

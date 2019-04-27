@@ -53,17 +53,18 @@ void Kitchen::launchKitchen() noexcept
     auto killTimer = std::chrono::steady_clock::now();
     while (true) {
         if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - replaceTimer).count() > _replaceTime / 1000) {
-            std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
             for (int i = 1; i <= 9; i++) {
-                if (_sharedMemory->status[_number][i] < 5)
+                if (_sharedMemory->status[_number][i] < 5) {
+                    std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
                     _sharedMemory->status[_number][i] += 1;
+                    lock.unlock();
+                }
             }
-            lock.unlock();
             replaceTimer = std::chrono::steady_clock::now();
         }
         if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - killTimer).count() > 5) {
-            std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
             if (_sharedMemory->status[_number][0] == 5) {
+                std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
                 _sharedMemory->status[_number][0] = -1;
                 _sharedMemory->status[_number][1] = 5;
                 _sharedMemory->status[_number][2] = 5;
@@ -74,8 +75,8 @@ void Kitchen::launchKitchen() noexcept
                 _sharedMemory->status[_number][7] = 5;
                 _sharedMemory->status[_number][8] = 5;
                 _sharedMemory->status[_number][9] = 5;
+                lock.unlock();
             }
-            lock.unlock();
             killTimer = std::chrono::steady_clock::now();
         }
         if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR | IPC_NOWAIT) > 0)

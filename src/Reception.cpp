@@ -36,10 +36,37 @@ void Reception::launchShell()
     while (true) {
         if (!std::getline(std::cin, input))
             throw Error("You entered an invalid input");
-        extractOrders(input);
-        sendOrders();
+        if (input == "status")
+            displayStatus();
+        else {
+            extractOrders(input);
+            sendOrders();
+        }
         input.erase();
     }
+}
+
+void Reception::displayStatus() const noexcept
+{
+    std::cout << std::endl << "==========" << std::endl;
+    std::cout << "Kitchens status" << std::endl;
+    for (int i = 0; i < MAX_KITCHENS; i++) {
+        if (_sharedMemory->status[i][0] != -1) {
+            std::cout << "Kitchen n°" << i + 1 << " : " << std::endl;
+            std::cout << "Working [" << _sharedMemory->status[i][0] << "/" << _numberOfCooks << "]" << std::endl;
+            std::cout << "Doe [" << _sharedMemory->status[i][1] << "/" << 5 << "]" << std::endl;
+            std::cout << "Tomato [" << _sharedMemory->status[i][2] << "/" << 5 << "]" << std::endl;
+            std::cout << "Gruyere [" << _sharedMemory->status[i][3] << "/" << 5 << "]" << std::endl;
+            std::cout << "Ham [" << _sharedMemory->status[i][4] << "/" << 5 << "]" << std::endl;
+            std::cout << "Mushrooms [" << _sharedMemory->status[i][5] << "/" << 5 << "]" << std::endl;
+            std::cout << "Steak [" << _sharedMemory->status[i][6] << "/" << 5 << "]" << std::endl;
+            std::cout << "Eggplant [" << _sharedMemory->status[i][7] << "/" << 5 << "]" << std::endl;
+            std::cout << "Goat cheese [" << _sharedMemory->status[i][8] << "/" << 5 << "]" << std::endl;
+            std::cout << "Chief love [" << _sharedMemory->status[i][9] << "/" << 5 << "]" << std::endl;
+            std::cout << "----------" << std::endl;
+        }
+    }
+    std::cout << std::endl << "==========" << std::endl;
 }
 
 void Reception::extractOrders(std::string &input)
@@ -133,26 +160,20 @@ void Reception::sendOrder(int kitchen, Pizza *pizza)
 
 int Reception::findFreeKitchen(int numberOfCooks) const noexcept
 {
-    std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     for (int i = 0; i < MAX_KITCHENS; i++) {
         if (_sharedMemory->status[i][0] == numberOfCooks) {
-            lock.unlock();
             return i;
         }
     }
-    lock.unlock();
     return -1;
 }
 
 int Reception::findNewKitchen() const noexcept
 {
-    std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     for (int i = 0; i < MAX_KITCHENS; i++) {
         if (_sharedMemory->status[i][0] == -1) {
-            lock.unlock();
             return i;
         }
     }
-    lock.unlock();
     return -1;
 }
