@@ -51,9 +51,10 @@ void Reception::displayStatus() const noexcept
     std::cout << std::endl << "==========" << std::endl;
     std::cout << "Kitchens status" << std::endl;
     for (int i = 0; i < MAX_KITCHENS; i++) {
+        std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
         if (_sharedMemory->status[i][0] != -1) {
             std::cout << "Kitchen n°" << i + 1 << " : " << std::endl;
-            std::cout << "Working [" << _sharedMemory->status[i][0] << "/" << _numberOfCooks << "]" << std::endl;
+            std::cout << "Working [" << _numberOfCooks - _sharedMemory->status[i][0] << "/" << _numberOfCooks << "]" << std::endl;
             std::cout << "Doe [" << _sharedMemory->status[i][1] << "/" << 5 << "]" << std::endl;
             std::cout << "Tomato [" << _sharedMemory->status[i][2] << "/" << 5 << "]" << std::endl;
             std::cout << "Gruyere [" << _sharedMemory->status[i][3] << "/" << 5 << "]" << std::endl;
@@ -65,6 +66,7 @@ void Reception::displayStatus() const noexcept
             std::cout << "Chief love [" << _sharedMemory->status[i][9] << "/" << 5 << "]" << std::endl;
             std::cout << "----------" << std::endl;
         }
+        lock.unlock();
     }
     std::cout << std::endl << "==========" << std::endl;
 }
@@ -142,8 +144,10 @@ void Reception::sendOrders() noexcept
             int pid = fork();
             if (pid == 0) {
                 kitchen = findNewKitchen();
-                Kitchen k(kitchen, _multiplier, _numberOfCooks, _replaceTime);
-                k.launchKitchen();
+                if (kitchen != -1) {
+                    Kitchen k(kitchen, _multiplier, _numberOfCooks, _replaceTime);
+                    k.launchKitchen();
+                }
             }
         }
     }
@@ -161,9 +165,10 @@ void Reception::sendOrder(int kitchen, Pizza *pizza)
 int Reception::findFreeKitchen(int numberOfCooks) const noexcept
 {
     for (int i = 0; i < MAX_KITCHENS; i++) {
-        if (_sharedMemory->status[i][0] == numberOfCooks) {
+        std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
+        if (_sharedMemory->status[i][0] == numberOfCooks)
             return i;
-        }
+        lock.unlock();
     }
     return -1;
 }
@@ -171,9 +176,10 @@ int Reception::findFreeKitchen(int numberOfCooks) const noexcept
 int Reception::findNewKitchen() const noexcept
 {
     for (int i = 0; i < MAX_KITCHENS; i++) {
-        if (_sharedMemory->status[i][0] == -1) {
+        std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
+        if (_sharedMemory->status[i][0] == -1)
             return i;
-        }
+        lock.unlock();
     }
     return -1;
 }
