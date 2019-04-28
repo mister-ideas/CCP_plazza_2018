@@ -23,7 +23,6 @@ Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     _sharedMemory->status[_number][0] = _numberOfCooks;
     lock.unlock();
-    printf("kitchen num = %d\n",number);
     key_t key = ftok("/etc/bashrc", 'B');
     if ((_msqid = msgget(key, 0666)) < 0)
         throw Error("msgget failed");
@@ -77,7 +76,6 @@ void Kitchen::launchKitchen() noexcept
                 _sharedMemory->status[_number][8] = 5;
                 _sharedMemory->status[_number][9] = 5;
                 lock.unlock();
-                printf("exit de la kitchen %d\n",_number);
                 exit(0);
             }
             killTimer = std::chrono::steady_clock::now();
@@ -116,7 +114,6 @@ void *launchThread(void *params)
 
 void executeOrder(ThreadParams *readParams) noexcept
 {
-    printf("cook %d is working\n",readParams->number);
     switch (readParams->cook->getPizza()->getType()) {
         case Margarita:
             if (readParams->sharedMemory->status[readParams->kitchenNumber][1] > 0

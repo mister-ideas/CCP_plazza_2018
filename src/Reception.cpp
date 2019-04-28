@@ -83,13 +83,13 @@ void Reception::extractOrders(std::string &input)
             if (std::regex_search(order, match, regex))
                 addOrder(match[1], match[2], stoi(match[3]));
             else
-                throw Error("Bad order syntax!");
+                throw Error("'" + order + "' : " + "Bad order syntax!");
             input.erase(0, pos + separator.length());
         }
         if (std::regex_search(input, match, regex))
             addOrder(match[1], match[2], stoi(match[3]));
         else
-            throw Error("Bad order syntax!");
+            throw Error("'" + order + "' : " + "Bad order syntax!");
     } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
