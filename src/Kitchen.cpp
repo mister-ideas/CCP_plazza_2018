@@ -77,6 +77,7 @@ void Kitchen::launchKitchen() noexcept
                 lock.unlock();
                 exit(0);
             }
+            lock.unlock();
             killTimer = std::chrono::steady_clock::now();
         }
         if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR | IPC_NOWAIT) > 0)
