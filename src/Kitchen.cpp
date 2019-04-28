@@ -75,7 +75,6 @@ void Kitchen::launchKitchen() noexcept
                 _sharedMemory->status[_number][8] = 5;
                 _sharedMemory->status[_number][9] = 5;
                 lock.unlock();
-                std::cout << "Killed " << _number << std::endl;
                 exit(0);
             }
             killTimer = std::chrono::steady_clock::now();
