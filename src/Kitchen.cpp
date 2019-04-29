@@ -30,14 +30,9 @@ Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
         throw Error("msgget failed");
 }
 
-Kitchen::~Kitchen()
-{
-    delete _threads;
-}
-
 void Kitchen::createCooks() noexcept
 {
-    _threads = new pthread_t[_numberOfCooks];
+    pthread_t *threads = new pthread_t[_numberOfCooks];
     for (int i = 0; i < _numberOfCooks; i++) {
         Cook *cook = new Cook;
         cook->setActiveOrder(false);
@@ -49,7 +44,7 @@ void Kitchen::createCooks() noexcept
         params->kitchenNumber = _number;
         params->multiplier = _multiplier;
         params->replaceTime = _replaceTime;
-        pthread_create(&_threads[i], NULL, launchThread, (void*)params);
+        pthread_create(&threads[i], NULL, launchThread, (void*)params);
     }
 }
 
