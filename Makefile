@@ -20,12 +20,12 @@ NAME=		plazza
 
 CXXFLAGS=	-Wall -Wextra -Werror -std=c++17
 
-CPPFLAGS=	-I include/ -lpthread
+CPPFLAGS=	-I include/
 
 all: 		$(NAME)
 
 $(NAME): 	$(OBJ)
-			$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $(NAME) $(OBJ)
+			$(CXX) -o $(NAME) $(OBJ) -lpthread
 
 clean:
 			$(RM) $(OBJ)
