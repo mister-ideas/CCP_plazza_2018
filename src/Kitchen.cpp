@@ -13,12 +13,14 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <pthread.h>
+#include <signal.h>
 #include "Kitchen.hpp"
 #include "Error.hpp"
 
 Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
 : _number(number), _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
 {
+    std::cout << "Created kitchen : " << _number << std::endl;
     _sharedMemory = openSharedMemory();
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     _sharedMemory->status[_number][0] = _numberOfCooks;
@@ -28,9 +30,14 @@ Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
         throw Error("msgget failed");
 }
 
+Kitchen::~Kitchen()
+{
+    delete _threads;
+}
+
 void Kitchen::createCooks() noexcept
 {
-    pthread_t *cooks = new pthread_t[_numberOfCooks];
+    _threads = new pthread_t[_numberOfCooks];
     for (int i = 0; i < _numberOfCooks; i++) {
         Cook *cook = new Cook;
         cook->setActiveOrder(false);
@@ -42,7 +49,7 @@ void Kitchen::createCooks() noexcept
         params->kitchenNumber = _number;
         params->multiplier = _multiplier;
         params->replaceTime = _replaceTime;
-        pthread_create(&cooks[i], NULL, launchThread, (void*)params);
+        pthread_create(&_threads[i], NULL, launchThread, (void*)params);
     }
 }
 
@@ -75,14 +82,14 @@ void Kitchen::launchKitchen() noexcept
                 _sharedMemory->status[_number][8] = 5;
                 _sharedMemory->status[_number][9] = 5;
                 lock.unlock();
-                exit(0);
+                std::cout << "Killed kitchen : " << _number << std::endl;
+                raise(SIGTERM);
             }
             lock.unlock();
             killTimer = std::chrono::steady_clock::now();
         }
         if (msgrcv(_msqid, &_receiveBuffer, sizeof(Pizza), _number + 1, MSG_NOERROR | IPC_NOWAIT) > 0)
             assignOrder();
-
     }
 }
 
@@ -92,6 +99,7 @@ void Kitchen::assignOrder() noexcept
         if (!_cooks[i]->getActiveOrder()) {
             std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
             if (_sharedMemory->status[_number][0] > 0) {
+                std::cout << "Kitchen n°" << _number << " : " << "1 cook busy" << std::endl;
                 _sharedMemory->status[_number][0] -= 1;
                 Pizza *pizza = new Pizza(_receiveBuffer.pizza.type, _receiveBuffer.pizza.size);
                 _cooks[i]->setPizza(pizza);
@@ -193,25 +201,26 @@ void displayAndLog(ThreadParams *readParams, const std::string &type) noexcept
     readParams->cook->setActiveOrder(false);
     switch (readParams->cook->getPizza()->getSize()) {
         case S:
-            std::cout << "Cooked 1 " << type << " with size S" << std::endl;
+            std::cout << "=> Cooked 1 " << type << " with size S" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size S" << std::endl << std::endl;
             break;
         case M:
-            std::cout << "Cooked 1 " << type << " with size M" << std::endl;
+            std::cout << "=> Cooked 1 " << type << " with size M" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size M" << std::endl << std::endl;
             break;
         case L:
-            std::cout << "Cooked 1 " << type << " with size L" << std::endl;
+            std::cout << "=> Cooked 1 " << type << " with size L" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size L" << std::endl << std::endl;
             break;
         case XL:
-            std::cout << "Cooked 1 " << type << " with size XL" << std::endl;
+            std::cout << "=> Cooked 1 " << type << " with size XL" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size XL" << std::endl << std::endl;
             break;
         case XXL:
-            std::cout << "Cooked 1 " << type << " with size XXL" << std::endl;
+            std::cout << "=> Cooked 1 " << type << " with size XXL" << std::endl;
             logFile << asctime(ti) << "Cooked 1 " << type << " with size XXL" << std::endl << std::endl;
             break;
     }
     logFile.close();
+    std::cout << "Kitchen n°" << readParams->kitchenNumber << " : " << "1 cook available" << std::endl;
 }

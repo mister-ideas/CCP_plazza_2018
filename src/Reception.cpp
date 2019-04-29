@@ -91,7 +91,7 @@ void Reception::extractOrders(std::string &input)
         if (std::regex_search(input, match, regex))
             addOrder(match[1], match[2], stoi(match[3]));
         else
-            throw Error("'" + order + "' : " + "Bad order syntax!");
+            throw Error("'" + input + "' : " + "Bad order syntax!");
     } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
@@ -102,15 +102,21 @@ void Reception::addOrder(std::string type, std::string size, int number)
     PizzaType newType;
     PizzaSize newSize;
 
+    if (number == 0)
+        throw Error(std::to_string(number) + " : " + "Invalid pizzas number!");
     for (int i = 0; i < number; i++) {
+
         if (type == "regina")
             newType = Regina;
         else if (type == "margarita")
             newType = Margarita;
         else if (type == "americana")
             newType = Americana;
-        else
+        else if (type == "fantasia")
             newType = Fantasia;
+        else
+            throw Error("'" + type + "' : " + "Bad pizza name!");
+
         if (size == "S")
             newSize = S;
         else if (size == "M")
@@ -121,6 +127,7 @@ void Reception::addOrder(std::string type, std::string size, int number)
             newSize = XL;
         else
             newSize = XXL;
+
         Pizza *pizza = new Pizza(newType, newSize);
         _orders.push_back(pizza);
     }

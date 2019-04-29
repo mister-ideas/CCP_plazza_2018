@@ -24,7 +24,7 @@ struct ThreadParams {
 class Kitchen {
 	public:
 		Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime);
-		~Kitchen() = default;
+		~Kitchen();
 
         void createCooks() noexcept;
         void launchKitchen() noexcept;
@@ -32,6 +32,7 @@ class Kitchen {
 
 	private:
         std::vector<Cook *> _cooks;
+        pthread_t *_threads;
         Plazza *_sharedMemory;
         OrderMsg _receiveBuffer;
         int _msqid;
