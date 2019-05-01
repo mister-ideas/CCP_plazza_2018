@@ -9,8 +9,9 @@
 #include <regex>
 #include <chrono>
 #include <thread>
-#include <sys/types.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include "Reception.hpp"
@@ -91,7 +92,7 @@ void Reception::extractOrders(std::string &input)
         if (std::regex_search(input, match, regex))
             addOrder(match[1], match[2], stoi(match[3]));
         else
-            throw Error("'" + input + "' : " + "Bad order syntax!");
+            throw Error("'" + order + "' : " + "Bad order syntax!");
     } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
@@ -102,21 +103,15 @@ void Reception::addOrder(std::string type, std::string size, int number)
     PizzaType newType;
     PizzaSize newSize;
 
-    if (number == 0)
-        throw Error(std::to_string(number) + " : " + "Invalid pizzas number!");
     for (int i = 0; i < number; i++) {
-
         if (type == "regina")
             newType = Regina;
         else if (type == "margarita")
             newType = Margarita;
         else if (type == "americana")
             newType = Americana;
-        else if (type == "fantasia")
-            newType = Fantasia;
         else
-            throw Error("'" + type + "' : " + "Bad pizza name!");
-
+            newType = Fantasia;
         if (size == "S")
             newSize = S;
         else if (size == "M")
@@ -127,7 +122,6 @@ void Reception::addOrder(std::string type, std::string size, int number)
             newSize = XL;
         else
             newSize = XXL;
-
         Pizza *pizza = new Pizza(newType, newSize);
         _orders.push_back(pizza);
     }
@@ -136,6 +130,8 @@ void Reception::addOrder(std::string type, std::string size, int number)
 void Reception::sendOrders() noexcept
 {
     int kitchen;
+    pid_t pid;
+    int stack = 0;
 
     while (_orders.size()) {
         std::this_thread::sleep_for (std::chrono::milliseconds(10));
@@ -148,7 +144,9 @@ void Reception::sendOrders() noexcept
             sendOrder(kitchen, _orders.back());
             _orders.pop_back();
         } else {
-            int pid = fork();
+            if ((pid = fork()) == -1)
+                perror("fork");
+            waitpid(pid, &stack, WNOHANG);
             if (pid == 0) {
                 kitchen = findNewKitchen();
                 if (kitchen != -1) {
