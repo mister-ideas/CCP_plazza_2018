@@ -17,7 +17,7 @@
 #include "Kitchen.hpp"
 #include "Error.hpp"
 
-bool thread_ok;
+bool isThreadAlive;
 
 Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
 : _number(number), _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
@@ -27,7 +27,7 @@ Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     _sharedMemory->status[_number][0] = _numberOfCooks;
     lock.unlock();
-    thread_ok = true;
+    isThreadAlive = true;
     key_t key = ftok("/etc/bashrc", 'B');
     if ((_msqid = msgget(key, 0666)) < 0)
         throw Error("msgget failed");
@@ -37,7 +37,7 @@ Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
 
 void Kitchen::createCooks() noexcept
 {
-     threads = new pthread_t[_numberOfCooks];
+    _threads = new pthread_t[_numberOfCooks];
     for (int i = 0; i < _numberOfCooks; i++) {
         Cook *cook = new Cook;
         cook->setActiveOrder(false);
@@ -49,7 +49,7 @@ void Kitchen::createCooks() noexcept
         params->kitchenNumber = _number;
         params->multiplier = _multiplier;
         params->replaceTime = _replaceTime;
-        pthread_create(&threads[i], NULL, launchThread, (void*)params);
+        pthread_create(&_threads[i], NULL, launchThread, (void*)params);
     }
 }
 
@@ -83,9 +83,9 @@ void Kitchen::launchKitchen() noexcept
                 _sharedMemory->status[_number][9] = 5;
                 lock.unlock();
                 std::cout << "Killed kitchen : " << _number << std::endl;
-                thread_ok = false;
-                for(int i = 0; i < _numberOfCooks;i++)
-                    pthread_join(threads[i],NULL);
+                isThreadAlive = false;
+                for (int i = 0; i < _numberOfCooks; i++)
+                    pthread_join(_threads[i],NULL);
                 raise(SIGTERM);
             }
             lock.unlock();
@@ -117,13 +117,13 @@ void Kitchen::assignOrder() noexcept
 void *launchThread(void *params)
 {
     ThreadParams *readParams = (ThreadParams*)params;
-    while (thread_ok == true) {
+    while (isThreadAlive == true) {
         if (readParams->cook->getActiveOrder()) {
             executeOrder(readParams);
         } else
             std::this_thread::yield();
     }
-    std::cout<<"cook killed\n";
+    std::cout << "Killed 1 cook" << std::endl;
     return (NULL);
 }
 
