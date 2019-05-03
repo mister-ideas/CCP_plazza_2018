@@ -17,6 +17,8 @@
 #include "Kitchen.hpp"
 #include "Error.hpp"
 
+bool thread_ok;
+
 Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
 : _number(number), _multiplier(multiplier), _numberOfCooks(numberOfCooks), _replaceTime(replaceTime)
 {
@@ -25,14 +27,17 @@ Kitchen::Kitchen(int number, int multiplier, int numberOfCooks, int replaceTime)
     std::unique_lock<std::mutex> lock(_sharedMemory->mutex);
     _sharedMemory->status[_number][0] = _numberOfCooks;
     lock.unlock();
+    thread_ok = true;
     key_t key = ftok("/etc/bashrc", 'B');
     if ((_msqid = msgget(key, 0666)) < 0)
         throw Error("msgget failed");
 }
 
+
+
 void Kitchen::createCooks() noexcept
 {
-    pthread_t *threads = new pthread_t[_numberOfCooks];
+     threads = new pthread_t[_numberOfCooks];
     for (int i = 0; i < _numberOfCooks; i++) {
         Cook *cook = new Cook;
         cook->setActiveOrder(false);
@@ -78,6 +83,9 @@ void Kitchen::launchKitchen() noexcept
                 _sharedMemory->status[_number][9] = 5;
                 lock.unlock();
                 std::cout << "Killed kitchen : " << _number << std::endl;
+                thread_ok = false;
+                for(int i = 0; i < _numberOfCooks;i++)
+                    pthread_join(threads[i],NULL);
                 raise(SIGTERM);
             }
             lock.unlock();
@@ -109,12 +117,14 @@ void Kitchen::assignOrder() noexcept
 void *launchThread(void *params)
 {
     ThreadParams *readParams = (ThreadParams*)params;
-    while (true) {
+    while (thread_ok == true) {
         if (readParams->cook->getActiveOrder()) {
             executeOrder(readParams);
         } else
             std::this_thread::yield();
     }
+    std::cout<<"cook killed\n";
+    return (NULL);
 }
 
 void executeOrder(ThreadParams *readParams) noexcept
